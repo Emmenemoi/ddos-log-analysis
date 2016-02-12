@@ -22,9 +22,9 @@ class SimpleProgressBar(object):
 		if self.old_display != self.display:
 			stars = ''.join(['*'] * self.display + [' '] * (100-self.display) )
 			if self.text != '':
-				print '{0}: [{1}] {2}/100{3}'.format(self.text, stars, self.display, ''.join([' '] * 100)),
+				print '{0}: [{1}] {2}%{3}'.format(self.text, stars, self.display, ''.join([' '] * 100)),
 			else:
-				print '[{0}] {1}/100'.format(stars, self.display),
+				print '[{0}] {1}%'.format(stars, self.display),
 			self._carriage_return()
 			self.old_display = self.display
 
@@ -56,14 +56,14 @@ def load_data():
 					spb = SimpleProgressBar(filename)
 					
 				with open(filename) as FileObj:
-					if spb:
+					if shared.progress:
 						current = 0
 						spb.update(current)
 						filelines = sum(1 for line in FileObj) 
 						FileObj.seek(0, 0)
 
 					for line in FileObj:
-						if spb:
+						if shared.progress:
 							current += 1
 							spb.update(value=current, maximum=filelines)
 						try:
@@ -76,7 +76,7 @@ def load_data():
 						if line_date >= shared.time_range_begin and line_date <= shared.time_range_end:
 							load_data.data.append( StatItem(parts.group('ip'), parts.group('url'), parts.group('agent')) )
 						elif line_date > shared.time_range_end:
-							if spb:
+							if shared.progress:
 								spb.update(filelines, filelines)
 							break
 
