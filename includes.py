@@ -5,9 +5,10 @@ import subprocess, time, re, logging, sys, os, getopt, fcntl, logging, glob
 from datetime import datetime, date
 
 class SimpleProgressBar(object):
-    def __init__(self, text='', state=0, maximum=100):
-        self.max = maximum
-        self.state = state
+    def __init__(self, text='', maxstars=100):
+        self.max = maxstars
+        self.state = 0
+        self.maxstars = maxstars
         self.old_display = -1
         self.text = text
         sys.stdout.write('\n')
@@ -18,13 +19,14 @@ class SimpleProgressBar(object):
         sys.stdout.flush()
 
     def _display(self):
-		self.display = int( self.state / self.max * 100 )
+		self.display = int( self.state / self.max * self.maxstars )
 		if self.old_display != self.display:
-			stars = ''.join(['*'] * self.display + [' '] * (100-self.display) )
+			stars = ''.join(['*'] * self.display + [' '] * (self.maxstars-self.display) )
+			percent = int(self.display*100/self.maxstars)
 			if self.text != '':
-				print '{0}: [{1}] {2}%{3}'.format(self.text, stars, self.display, ''.join([' '] * 100)),
+				print '{0}: [{1}] {2}%{3}'.format(self.text, stars, percent, ''.join([' '] * self.maxstars)),
 			else:
-				print '[{0}] {1}%'.format(stars, self.display),
+				print '[{0}] {1}%'.format(stars, percent),
 			self._carriage_return()
 			self.old_display = self.display
 
@@ -50,10 +52,10 @@ def load_data():
 		print 'Load data from {0} between {1} and {2}'.format(shared.analysis_path, shared.time_range_begin.strftime(shared.arg_date_format), shared.time_range_end.strftime(shared.arg_date_format))
 		find = re.compile(shared.apacheregex, re.IGNORECASE)
 		for filename in glob.glob(shared.analysis_path):
-			mtime = datetime.fromtimestamp(os.path.getmtime(filename))
+			mtime = datetime.fromtimestamp(os.path.getmtime(filename))			
 			if os.path.isfile(filename) and mtime >= shared.time_range_begin :
 				if shared.progress:
-					spb = SimpleProgressBar(filename)
+					spb = SimpleProgressBar(filename, 10)
 					
 				with open(filename) as FileObj:
 					if shared.progress:
